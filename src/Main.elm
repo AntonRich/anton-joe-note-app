@@ -1,97 +1,17 @@
 module Main exposing (Model, Msg, init, subscriptions, update, view)
 
 import Browser exposing (application)
-import Html exposing (..)
-import Html.Attributes exposing (..)
+import Html exposing (Html)
 import Http
+import Element exposing (..)
+import Element.Input as Input
+import Element.Border as Border
+import Element.Font as Font
+import Element.Background as Background
+import Color exposing (..)
 
 
-
--- The Purpose
--- To Teach the complexity path
--- Start from a simple function
--- Upgrade to currying
--- Upgrade to currying + partial application
---   (This is the language of a teacher)
--- Challenge:
--- Translate to the language of the student
--- add some "you will learn"
--- add some, heres the challenge?
-
-
-simpleGreet : String -> String
-simpleGreet str =
-    "Hello " ++ str
-
-
-curriedGreet : String -> String
-curriedGreet =
-    \t -> "Hello " ++ t
-
-
-
--- How can rename the function in a meaningful way
--- How can I demonstrate this, in a creative way
-
-
-customFunction : String -> (String -> String) -> String
-
-
-
--- How could we make this build on previous concepts, in a more intuitive way?
-
-
-customFunction str myFunction =
-    myFunction str
-
-
-
--- Lessons learned
--- mutating code while teaching, is not effective
--- What would be a better example than String.reverse? (what could we expand on?)
--- What are the goals? Why did that come last?
--- What are the specific reasons you would use currying or piping? (aka, why?)
--- Functions deserve better names, they will aid in learning.
--- re-listen to teaching elm to beginners
-
-
-view : Model -> Html Msg
-view model =
-    div []
-        [ text "model"
-        , div [ style "color" "red" ] [ text model.myFavoriteString ]
-        , text (simpleGreet "Bob")
-        , text (curriedGreet "Bob")
-
-        -- How could upgrade to this concept, in a nicer meaningful way?
-        , text (customFunction "Some Text" String.reverse)
-        , text (customFunction "Some Text" curriedGreet)
-        , text (customFunction "Some Text" simpleGreet)
-        ]
-
-
-myOtherFunction : String -> String
-myOtherFunction str =
-    if String.contains "apples" str then
-        "He likes nothing!"
-
-    else
-        str
-
-
-greet : String -> (String -> String) -> String
-greet myString myFunction =
-    myFunction myString
-
-
-
--- learning is kind of like
---             __
---         __
---     __
--- __
--- design a learning path, that starts small -- low friction
-
+-- Main
 
 main =
     Browser.element
@@ -102,47 +22,82 @@ main =
         }
 
 
+init : () -> ( Model, Cmd Msg )
+init flags =
+    ( Model ""
+    , Cmd.none
+    )
+
+-- Model
+
+type Note = String
+
 type alias Model =
-    { myFavoriteString : String
+    { note : String
     }
 
-
-emptyModel : Model
-emptyModel =
-    { myFavoriteString = ""
-    }
-
+-- Update
 
 type Msg
-    = Msg1
-    | GotText (Result Http.Error String)
-
+    = NoOp
+    | ChangeText String
+    | Submit
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        Msg1 ->
+        NoOp ->
             ( model, Cmd.none )
+        
+        _ ->
+            ( model, Cmd.none )
+        
 
-        GotText result ->
-            case result of
-                Ok str ->
-                    ( { model | myFavoriteString = str }, Cmd.none )
-
-                Err err ->
-                    ( { model | myFavoriteString = Debug.toString err }, Cmd.none )
-
+-- Subscriptions
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.none
 
 
-init : () -> ( Model, Cmd Msg )
-init flags =
-    ( emptyModel
-    , Http.get
-        { url = "https://s3.amazonaws.com/joe-bucket-round-1/data.json"
-        , expect = Http.expectString GotText
-        }
-    )
+-- View
+
+view : Model -> Html Msg
+view model =
+    layout [] <|
+        column [ width <| px 500 ]
+            [ viewInput model
+            , viewOutput model
+            ]
+
+
+viewInput : Model -> Element Msg
+viewInput model =
+    column
+        [ width (px 250)]
+        [ Input.multiline
+            [ height (px 300)
+            , Border.width 1
+            , Border.rounded 3
+            , Border.color black
+            , padding 10
+            , alignLeft
+            ]
+            { onChange = ChangeText
+            , text = ""
+            , placeholder = Nothing
+            , label = Input.labelAbove [] <| text ""
+            , spellcheck = False
+            }
+        ]
+
+viewOutput : Model -> Element msg
+viewOutput model =
+    column
+        [ alignRight ]
+        [el [] <| text "whatever"
+        ]
+
+
+
+    
