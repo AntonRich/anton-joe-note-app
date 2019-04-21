@@ -17,40 +17,40 @@ main =
     Browser.element
         { init = init
         , update = update
-        , subscriptions = subscriptions
         , view = view
+        , subscriptions = subscriptions
         }
 
 
 init : () -> ( Model, Cmd Msg )
 init flags =
-    ( Model ""
+    ( Model "" []
     , Cmd.none
     )
 
 -- Model
 
-type Note = String
+type alias Note = String
 
 type alias Model =
-    { note : String
+    { note : Note
+    , entries : List Note
     }
 
 -- Update
 
 type Msg
-    = NoOp
-    | ChangeText String
+    = ChangeText String
     | Submit
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        NoOp ->
-            ( model, Cmd.none )
-        
-        _ ->
-            ( model, Cmd.none )
+        Submit ->
+            ( { model | entries = model.note :: model.entries }, Cmd.none )
+
+        ChangeText text ->
+            ( { model | note = text }, Cmd.none )
         
 
 -- Subscriptions
@@ -66,8 +66,10 @@ view : Model -> Html Msg
 view model =
     layout [] <|
         column [ width <| px 500 ]
-            [ viewInput model
-            , viewOutput model
+            [ row []
+                [ viewInput model
+                , viewOutput model
+                ]
             ]
 
 
@@ -81,7 +83,6 @@ viewInput model =
             , Border.rounded 3
             , Border.color black
             , padding 10
-            , alignLeft
             ]
             { onChange = ChangeText
             , text = ""
@@ -89,15 +90,22 @@ viewInput model =
             , label = Input.labelAbove [] <| text ""
             , spellcheck = False
             }
+        , Input.button
+            [ alignRight ]
+            { onPress = Just Submit
+            , label = text "add the note"
+            }
         ]
 
 viewOutput : Model -> Element msg
 viewOutput model =
     column
-        [ alignRight ]
-        [el [] <| text "whatever"
-        ]
+        [ ]
+        (mapOutput model)
 
+mapOutput : Model -> List (Element msg)
+mapOutput model =
+    List.map (\elem -> el [] <| text elem) model.entries
 
 
     
